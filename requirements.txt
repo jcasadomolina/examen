@@ -1,0 +1,16 @@
+uvicorn
+fastApi
+pydantic
+pymongo
+motor
+requests
+environs
+jinja2
+dnspython
+httpx
+python-multipart
+fastapi_mail
+cloudinary
+authlib
+google-auth
+itsdangerous

@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Mi Mapa - {{ email_usuario }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <style>
+        #map { height: 500px; width: 100%; border-radius: 10px; }
+        .thumbnail { max-width: 100px; max-height: 100px; }
+    </style>
+</head>
+<body class="container py-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1>Mapa de: {{ email_usuario }}</h1>
+        <a href="/" class="btn btn-outline-danger">Salir</a>
+    </div>
+
+    <div id="map" class="mb-4 shadow-sm"></div>
+
+    <div class="card mb-4">
+        <div class="card-header bg-success text-white">Añadir Nuevo Destino</div>
+        <div class="card-body">
+            <form action="/web/nuevo-marcador" method="post" enctype="multipart/form-data">
+            
+                <input type="hidden" name="email" value="{{ email_usuario }}">
+
+                <div class="row">
+                    <div class="col-md-5">
+                        <input type="text" name="ciudad" class="form-control" placeholder="Ciudad o País (Ej: París, Francia)" required>
+                    </div>
+                    <div class="col-md-5">
+                        <input type="file" name="imagen" class="form-control" accept="image/*" required>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-success w-100">Añadir</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <h3>Visitas Recientes</h3>
+    <ul class="list-group">
+        <li class="list-group-item text-muted">Aún no hay visitas registradas...</li>
+        </ul>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // 1. Configuración del mapa
+        var map = L.map('map').setView([48.8566, 2.3522], 4);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+
+        // --- SOLUCIÓN ROBUSTA ---
+        // 1. Guardamos los datos como TEXTO primero (con comillas simples)
+        //    Usamos 'safe' para que no rompa el formato JSON.
+        var marcadoresTexto = '{{ marcadores | tojson | safe }}';
+
+        // 2. Intentamos convertir ese texto a una LISTA real de JS
+        var marcadores = [];
+        try {
+            marcadores = JSON.parse(marcadoresTexto);
+        } catch (e) {
+            console.error("Error al leer los marcadores:", e);
+            marcadores = []; // Si falla, lista vacía para que no rompa la web
+        }
+
+        console.log("Marcadores listos:", marcadores);
+
+        // 3. Pintamos en el mapa
+        if (marcadores && marcadores.length > 0) {
+            marcadores.forEach(function(m) {
+                // Crear el popup
+                var container = document.createElement('div');
+                
+                var titulo = document.createElement('b');
+                titulo.innerText = m.ciudad || "Sin nombre"; 
+                container.appendChild(titulo);
+                
+                container.appendChild(document.createElement('br'));
+
+                if (m.img) {
+                    var imagen = document.createElement('img');
+                    imagen.src = m.img;
+                    imagen.className = 'thumbnail';
+                    imagen.style.marginTop = "5px";
+                    imagen.onerror = function() { this.style.display = 'none'; };
+                    container.appendChild(imagen);
+                }
+                
+                // Asegurar coordenadas numéricas
+                var lat = parseFloat(m.lat);
+                var lon = parseFloat(m.lon);
+
+                // Solo pintamos si las coordenadas son válidas
+                if (!isNaN(lat) && !isNaN(lon)) {
+                    L.marker([lat, lon]).addTo(map)
+                        .bindPopup(container);
+                }
+            });
+        }
+    </script>
+</body>
+</html>

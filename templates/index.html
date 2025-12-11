@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <script src="https://accounts.google.com/gsi/client" async></script>
+    <script>
+      async function handleCredentialResponse(response) {
+        try {
+            // Enviamos el token a tu nuevo endpoint POST /login
+            const res = await fetch("/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ token: response.credential })
+            });
+
+            if (res.ok) {
+                // Si el backend dice OK, recargamos la página
+                // para que Jinja detecte la sesión y muestre el dashboard/bienvenida
+                location.reload(); 
+            } else {
+                const data = await res.json();
+                alert("Error de autenticación: " + data.detail);
+            }
+        } catch (error) {
+            console.error("Error:", error);
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <h1>Mi App con FastAPI</h1>
+    
+    {% if user %}
+        <h2>Bienvenido, {{ user.name }}</h2>
+        <img src="{{ user.picture }}" width="50">
+        <br>
+        <a href="/mapa">Ir al Mapa</a>
+        <br>
+        <a href="/logout">Cerrar Sesión</a>
+    {% else %}
+        <div
+          id="g_id_onload"
+          data-auto_prompt="false"
+          data-callback="handleCredentialResponse"
+          data-client_id="{{ client_id }}" 
+        ></div>
+        <div class="g_id_signin" data-type="standard"></div>
+    {% endif %}
+  </body>
+</html>
