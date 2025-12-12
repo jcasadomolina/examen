@@ -76,7 +76,7 @@ async def logout(request: Request):
 # Página principal
 @app.get("/")
 async def home(request: Request, user: dict = Depends(get_user)):
-    return templates.TemplateResponse("index.html", {
+    return templates.TemplateResponse("home.html", {
         "request": request, 
         "user": user, 
         "client_id": client_id

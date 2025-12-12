@@ -5,7 +5,6 @@
     <script>
       async function handleCredentialResponse(response) {
         try {
-            // Enviamos el token a tu nuevo endpoint POST /login
             const res = await fetch("/login", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -13,8 +12,6 @@
             });
 
             if (res.ok) {
-                // Si el backend dice OK, recargamos la página
-                // para que Jinja detecte la sesión y muestre el dashboard/bienvenida
                 location.reload(); 
             } else {
                 const data = await res.json();
@@ -27,7 +24,7 @@
     </script>
   </head>
   <body>
-    <h1>Bienvenido a MiMapa</h1>
+    <h1>Bienvenido a ...</h1>
     
     {% if user %}
         <h2>Bienvenido, {{ user.name }}</h2>

@@ -50,33 +50,26 @@
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        // 1. Configuración del mapa
         var map = L.map('map').setView([48.8566, 2.3522], 4);
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; OpenStreetMap contributors'
         }).addTo(map);
 
-        // --- SOLUCIÓN ROBUSTA ---
-        // 1. Guardamos los datos como TEXTO primero (con comillas simples)
-        //    Usamos 'safe' para que no rompa el formato JSON.
         var marcadoresTexto = '{{ marcadores | tojson | safe }}';
-
-        // 2. Intentamos convertir ese texto a una LISTA real de JS
         var marcadores = [];
+
         try {
             marcadores = JSON.parse(marcadoresTexto);
         } catch (e) {
             console.error("Error al leer los marcadores:", e);
-            marcadores = []; // Si falla, lista vacía para que no rompa la web
+            marcadores = []; 
         }
 
         console.log("Marcadores listos:", marcadores);
 
-        // 3. Pintamos en el mapa
         if (marcadores && marcadores.length > 0) {
             marcadores.forEach(function(m) {
-                // Crear el popup
                 var container = document.createElement('div');
                 
                 var titulo = document.createElement('b');
@@ -94,11 +87,9 @@
                     container.appendChild(imagen);
                 }
                 
-                // Asegurar coordenadas numéricas
                 var lat = parseFloat(m.lat);
                 var lon = parseFloat(m.lon);
 
-                // Solo pintamos si las coordenadas son válidas
                 if (!isNaN(lat) && !isNaN(lon)) {
                     L.marker([lat, lon]).addTo(map)
                         .bindPopup(container);
